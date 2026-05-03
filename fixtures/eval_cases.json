@@ -1,0 +1,492 @@
+[
+  {
+    "case_id": "EVAL-001",
+    "name": "fan_failure_single",
+    "description": "单台服务器风扇停转导致 CPU 过热降频。根因明确，低风险，可自动处理。",
+    "raw_alerts": [
+      {
+        "alert_id": "A-E001-001",
+        "host": "rack-a12-srv-007",
+        "rack": "A12",
+        "severity": "warning",
+        "source": "ipmi",
+        "message": "Fan FAN1 RPM dropped to 0",
+        "timestamp": "2026-05-04T03:12:08Z",
+        "raw": {"fan_id": "FAN1", "rpm": 0, "threshold_lower_critical": 1500}
+      },
+      {
+        "alert_id": "A-E001-002",
+        "host": "rack-a12-srv-007",
+        "rack": "A12",
+        "severity": "critical",
+        "source": "ipmi",
+        "message": "CPU0 temperature 92C exceeds upper critical threshold 85C",
+        "timestamp": "2026-05-04T03:12:15Z",
+        "raw": {"sensor": "CPU0_Temp", "value": 92, "threshold_upper_critical": 85}
+      },
+      {
+        "alert_id": "A-E001-003",
+        "host": "rack-a12-srv-007",
+        "rack": "A12",
+        "severity": "critical",
+        "source": "zabbix",
+        "message": "CPU throttling detected, frequency dropped 40%",
+        "timestamp": "2026-05-04T03:12:22Z",
+        "raw": {"metric": "cpu.throttle.pct", "value": 40}
+      },
+      {
+        "alert_id": "A-E001-004",
+        "host": "rack-a12-srv-007",
+        "rack": "A12",
+        "severity": "warning",
+        "source": "syslog",
+        "message": "kernel: thermal throttling activated on CPU0",
+        "timestamp": "2026-05-04T03:12:25Z",
+        "raw": {"log_level": "warn", "facility": "kern"}
+      }
+    ],
+    "ground_truth": {
+      "is_noise": false,
+      "expected_priority": "P1",
+      "accepted_priorities": ["P0", "P1"],
+      "root_cause_component": "fan",
+      "root_cause_keywords": ["风扇", "fan", "FAN", "散热", "thermal"],
+      "requires_approval": false,
+      "sop_keyword": "fan_failure",
+      "risk_level": "low",
+      "expected_status": "completed",
+      "rationale": "风扇停转是明确硬件故障，热插拔更换为低风险操作，可自动创建工单并执行 ansible"
+    }
+  },
+  {
+    "case_id": "EVAL-002",
+    "name": "disk_smart_warning",
+    "description": "硬盘 SMART 重分配扇区数持续增加，磁盘即将失效。P2 预警，低风险可自动处理。",
+    "raw_alerts": [
+      {
+        "alert_id": "A-E002-001",
+        "host": "rack-b05-srv-003",
+        "rack": "B05",
+        "severity": "warning",
+        "source": "smart",
+        "message": "SMART: Reallocated Sectors Count attribute value 127 exceeds threshold 36",
+        "timestamp": "2026-05-04T08:30:00Z",
+        "raw": {"device": "/dev/sda", "attribute": "Reallocated_Sector_Ct", "value": 127, "threshold": 36}
+      },
+      {
+        "alert_id": "A-E002-002",
+        "host": "rack-b05-srv-003",
+        "rack": "B05",
+        "severity": "warning",
+        "source": "zabbix",
+        "message": "Disk I/O latency avg 850ms (threshold: 200ms)",
+        "timestamp": "2026-05-04T08:32:15Z",
+        "raw": {"metric": "vfs.dev.read.await", "value": 850, "threshold": 200}
+      },
+      {
+        "alert_id": "A-E002-003",
+        "host": "rack-b05-srv-003",
+        "rack": "B05",
+        "severity": "warning",
+        "source": "syslog",
+        "message": "kernel: ata1.00: error: { UNC }, dev sda sector 1887436800",
+        "timestamp": "2026-05-04T08:33:01Z",
+        "raw": {"log_level": "warn", "ata_error": "UNC", "sector": 1887436800}
+      }
+    ],
+    "ground_truth": {
+      "is_noise": false,
+      "expected_priority": "P2",
+      "accepted_priorities": ["P1", "P2"],
+      "root_cause_component": "disk",
+      "root_cause_keywords": ["磁盘", "disk", "硬盘", "SMART", "扇区", "sector"],
+      "requires_approval": false,
+      "sop_keyword": "disk_failure",
+      "risk_level": "low",
+      "expected_status": "completed",
+      "rationale": "SMART 预警阶段尚未失效，可自动创建工单并安排预防性更换，无需立即人工审批"
+    }
+  },
+  {
+    "case_id": "EVAL-003",
+    "name": "memory_ecc_errors",
+    "description": "内存可纠正 ECC 错误率在 1 小时内骤增至 47 次，存在数据损坏风险。高风险，需人工审批。",
+    "raw_alerts": [
+      {
+        "alert_id": "A-E003-001",
+        "host": "rack-c01-srv-012",
+        "rack": "C01",
+        "severity": "critical",
+        "source": "ipmi",
+        "message": "SEL: Memory correctable ECC error count 47 in last hour (DIMM A0)",
+        "timestamp": "2026-05-04T14:05:00Z",
+        "raw": {"sel_code": "0x04", "dimm_slot": "A0", "ecc_count": 47, "window_minutes": 60}
+      },
+      {
+        "alert_id": "A-E003-002",
+        "host": "rack-c01-srv-012",
+        "rack": "C01",
+        "severity": "warning",
+        "source": "syslog",
+        "message": "EDAC MC0: 1 CE memory read error on CPU#0Channel#0_DIMM#0",
+        "timestamp": "2026-05-04T14:05:45Z",
+        "raw": {"edac_type": "CE", "channel": 0, "dimm": 0}
+      },
+      {
+        "alert_id": "A-E003-003",
+        "host": "rack-c01-srv-012",
+        "rack": "C01",
+        "severity": "warning",
+        "source": "zabbix",
+        "message": "Memory error rate increasing trend detected (3x baseline in 24h)",
+        "timestamp": "2026-05-04T14:06:00Z",
+        "raw": {"metric": "mem.ecc.correctable", "current_rate": 47, "baseline_rate": 14}
+      }
+    ],
+    "ground_truth": {
+      "is_noise": false,
+      "expected_priority": "P1",
+      "accepted_priorities": ["P0", "P1"],
+      "root_cause_component": "memory",
+      "root_cause_keywords": ["内存", "memory", "ECC", "DIMM", "内存错误"],
+      "requires_approval": true,
+      "sop_keyword": "memory_ecc",
+      "risk_level": "high",
+      "expected_status": "pending_approval",
+      "rationale": "内存错误率骤增有数据损坏风险，更换 DIMM 或迁移业务属于高风险操作，必须人工审批"
+    }
+  },
+  {
+    "case_id": "EVAL-004",
+    "name": "psu_redundancy_lost",
+    "description": "PSU2 物理故障导致电源冗余丢失，单电源运行。P1，高风险需人工介入。",
+    "raw_alerts": [
+      {
+        "alert_id": "A-E004-001",
+        "host": "rack-a08-srv-021",
+        "rack": "A08",
+        "severity": "critical",
+        "source": "ipmi",
+        "message": "PSU2 Status: FAILED - input lost",
+        "timestamp": "2026-05-04T22:10:00Z",
+        "raw": {"psu_id": "PSU2", "status": "FAILED", "input_voltage": 0}
+      },
+      {
+        "alert_id": "A-E004-002",
+        "host": "rack-a08-srv-021",
+        "rack": "A08",
+        "severity": "warning",
+        "source": "ipmi",
+        "message": "Power supply redundancy lost: running on single PSU",
+        "timestamp": "2026-05-04T22:10:03Z",
+        "raw": {"redundancy_status": "non_redundant", "active_psu": "PSU1"}
+      },
+      {
+        "alert_id": "A-E004-003",
+        "host": "rack-a08-srv-021",
+        "rack": "A08",
+        "severity": "warning",
+        "source": "zabbix",
+        "message": "Power supply redundancy check FAILED",
+        "timestamp": "2026-05-04T22:10:10Z",
+        "raw": {"check": "psu_redundancy", "result": "FAILED"}
+      }
+    ],
+    "ground_truth": {
+      "is_noise": false,
+      "expected_priority": "P1",
+      "accepted_priorities": ["P0", "P1"],
+      "root_cause_component": "psu",
+      "root_cause_keywords": ["PSU", "电源", "power supply", "冗余", "redundancy"],
+      "requires_approval": true,
+      "sop_keyword": "psu_failure",
+      "risk_level": "high",
+      "expected_status": "pending_approval",
+      "rationale": "电源模块更换及业务迁移评估属于高风险操作，不得自动执行"
+    }
+  },
+  {
+    "case_id": "EVAL-005",
+    "name": "cpu_overheat_multi_host",
+    "description": "B03 机柜 3 台服务器同时 CPU 过热，机柜入口温度 42°C，疑似 CRAC 故障。P0，高风险。",
+    "raw_alerts": [
+      {
+        "alert_id": "A-E005-001",
+        "host": "rack-b03-srv-005",
+        "rack": "B03",
+        "severity": "critical",
+        "source": "ipmi",
+        "message": "CPU0 temperature 91C exceeds critical threshold 85C",
+        "timestamp": "2026-05-04T11:20:00Z",
+        "raw": {"sensor": "CPU0_Temp", "value": 91, "threshold": 85}
+      },
+      {
+        "alert_id": "A-E005-002",
+        "host": "rack-b03-srv-006",
+        "rack": "B03",
+        "severity": "critical",
+        "source": "ipmi",
+        "message": "CPU0 temperature 89C exceeds critical threshold 85C",
+        "timestamp": "2026-05-04T11:20:05Z",
+        "raw": {"sensor": "CPU0_Temp", "value": 89, "threshold": 85}
+      },
+      {
+        "alert_id": "A-E005-003",
+        "host": "rack-b03-srv-007",
+        "rack": "B03",
+        "severity": "critical",
+        "source": "ipmi",
+        "message": "CPU0 temperature 95C, all fans nominal 4200RPM",
+        "timestamp": "2026-05-04T11:20:08Z",
+        "raw": {"sensor": "CPU0_Temp", "value": 95, "fan_rpm": 4200}
+      },
+      {
+        "alert_id": "A-E005-004",
+        "host": "rack-b03-srv-005",
+        "rack": "B03",
+        "severity": "critical",
+        "source": "zabbix",
+        "message": "Rack B03 inlet temperature 42C (threshold: 27C) - possible CRAC failure",
+        "timestamp": "2026-05-04T11:20:15Z",
+        "raw": {"metric": "rack.inlet_temp", "value": 42, "threshold": 27, "rack": "B03"}
+      }
+    ],
+    "ground_truth": {
+      "is_noise": false,
+      "expected_priority": "P0",
+      "accepted_priorities": ["P0"],
+      "root_cause_component": "cooling",
+      "root_cause_keywords": ["制冷", "冷却", "CRAC", "空调", "cooling", "inlet", "机柜温度", "入口"],
+      "requires_approval": true,
+      "sop_keyword": "cpu_overheat",
+      "risk_level": "high",
+      "expected_status": "pending_approval",
+      "rationale": "多机同时过热指向机柜级制冷故障，业务迁移和 CRAC 检修属于高风险操作"
+    }
+  },
+  {
+    "case_id": "EVAL-006",
+    "name": "raid_array_degraded",
+    "description": "RAID5 阵列降级（1 块盘失效），待修复期间无冗余保护。P1，高风险。",
+    "raw_alerts": [
+      {
+        "alert_id": "A-E006-001",
+        "host": "rack-d02-srv-004",
+        "rack": "D02",
+        "severity": "critical",
+        "source": "syslog",
+        "message": "md: raid5 md0 is degraded (1/3 disks failed), drive sdb removed",
+        "timestamp": "2026-05-04T16:45:00Z",
+        "raw": {"md_device": "md0", "raid_level": 5, "failed_disks": 1, "total_disks": 3, "failed_dev": "sdb"}
+      },
+      {
+        "alert_id": "A-E006-002",
+        "host": "rack-d02-srv-004",
+        "rack": "D02",
+        "severity": "critical",
+        "source": "smart",
+        "message": "SMART: /dev/sdb Current Pending Sector Count = 32",
+        "timestamp": "2026-05-04T16:44:55Z",
+        "raw": {"device": "/dev/sdb", "attribute": "Current_Pending_Sector", "value": 32}
+      },
+      {
+        "alert_id": "A-E006-003",
+        "host": "rack-d02-srv-004",
+        "rack": "D02",
+        "severity": "warning",
+        "source": "zabbix",
+        "message": "RAID array md0 state: degraded",
+        "timestamp": "2026-05-04T16:45:10Z",
+        "raw": {"raid_device": "md0", "state": "degraded", "missing_disks": 1}
+      }
+    ],
+    "ground_truth": {
+      "is_noise": false,
+      "expected_priority": "P1",
+      "accepted_priorities": ["P0", "P1"],
+      "root_cause_component": "disk",
+      "root_cause_keywords": ["RAID", "磁盘", "disk", "阵列", "降级", "degraded", "sdb"],
+      "requires_approval": true,
+      "sop_keyword": "disk_failure",
+      "risk_level": "high",
+      "expected_status": "pending_approval",
+      "rationale": "RAID 降级期间无冗余保护，磁盘更换和重建操作不得自动执行，须人工确认业务影响"
+    }
+  },
+  {
+    "case_id": "EVAL-007",
+    "name": "network_flap_noise",
+    "description": "NIC bond0 在 5 分钟内链路抖动 12 次，均在 30s 内自愈，属已知交换机端口抖动噪声。",
+    "raw_alerts": [
+      {
+        "alert_id": "A-E007-001",
+        "host": "rack-a03-srv-009",
+        "rack": "A03",
+        "severity": "warning",
+        "source": "zabbix",
+        "message": "Network interface bond0 link down (recovered in 8s)",
+        "timestamp": "2026-05-04T02:01:00Z",
+        "raw": {"interface": "bond0", "recovered": true, "duration_sec": 8}
+      },
+      {
+        "alert_id": "A-E007-002",
+        "host": "rack-a03-srv-009",
+        "rack": "A03",
+        "severity": "warning",
+        "source": "zabbix",
+        "message": "Network interface bond0 link down (recovered in 11s)",
+        "timestamp": "2026-05-04T02:01:25Z",
+        "raw": {"interface": "bond0", "recovered": true, "duration_sec": 11}
+      },
+      {
+        "alert_id": "A-E007-003",
+        "host": "rack-a03-srv-009",
+        "rack": "A03",
+        "severity": "warning",
+        "source": "zabbix",
+        "message": "Network interface bond0 link down (recovered in 7s) - event 12 in 5min",
+        "timestamp": "2026-05-04T02:05:42Z",
+        "raw": {"interface": "bond0", "recovered": true, "duration_sec": 7, "flap_count_5min": 12}
+      }
+    ],
+    "ground_truth": {
+      "is_noise": true,
+      "expected_priority": "P3",
+      "accepted_priorities": ["P3"],
+      "root_cause_component": null,
+      "root_cause_keywords": [],
+      "requires_approval": null,
+      "sop_keyword": null,
+      "risk_level": null,
+      "expected_status": "skipped",
+      "rationale": "多次短暂抖动均自愈，属交换机端口已知问题，不构成事件"
+    }
+  },
+  {
+    "case_id": "EVAL-008",
+    "name": "heartbeat_recovery_noise",
+    "description": "单条 Zabbix 心跳超时，12 秒内自愈，无其他关联告警。",
+    "raw_alerts": [
+      {
+        "alert_id": "A-E008-001",
+        "host": "rack-b07-srv-002",
+        "rack": "B07",
+        "severity": "info",
+        "source": "zabbix",
+        "message": "Heartbeat timeout (auto-recovered in 12s)",
+        "timestamp": "2026-05-04T02:00:00Z",
+        "raw": {"recovered": true, "duration_sec": 12}
+      }
+    ],
+    "ground_truth": {
+      "is_noise": true,
+      "expected_priority": "P3",
+      "accepted_priorities": ["P3"],
+      "root_cause_component": null,
+      "root_cause_keywords": [],
+      "requires_approval": null,
+      "sop_keyword": null,
+      "risk_level": null,
+      "expected_status": "skipped",
+      "rationale": "单条心跳超时，30s 内自愈，标准噪声"
+    }
+  },
+  {
+    "case_id": "EVAL-009",
+    "name": "scheduled_backup_load",
+    "description": "凌晨 02:00 备份窗口期间 CPU/IO 高负载，属已知计划任务。",
+    "raw_alerts": [
+      {
+        "alert_id": "A-E009-001",
+        "host": "rack-c04-srv-011",
+        "rack": "C04",
+        "severity": "warning",
+        "source": "zabbix",
+        "message": "CPU load avg 5min = 85% (threshold: 80%)",
+        "timestamp": "2026-05-04T02:15:00Z",
+        "raw": {"metric": "system.cpu.load.avg5", "value": 85, "threshold": 80}
+      },
+      {
+        "alert_id": "A-E009-002",
+        "host": "rack-c04-srv-011",
+        "rack": "C04",
+        "severity": "warning",
+        "source": "zabbix",
+        "message": "Disk I/O wait 40% (threshold: 30%) - backup process active",
+        "timestamp": "2026-05-04T02:15:10Z",
+        "raw": {"metric": "system.cpu.iowait", "value": 40, "process": "rsync", "scheduled": true}
+      }
+    ],
+    "ground_truth": {
+      "is_noise": true,
+      "expected_priority": "P3",
+      "accepted_priorities": ["P3"],
+      "root_cause_component": null,
+      "root_cause_keywords": [],
+      "requires_approval": null,
+      "sop_keyword": null,
+      "risk_level": null,
+      "expected_status": "skipped",
+      "rationale": "备份窗口期间预期高负载，raw 中含 scheduled=true 标记，属噪声"
+    }
+  },
+  {
+    "case_id": "EVAL-010",
+    "name": "cascade_disk_io_app",
+    "description": "磁盘故障引发文件系统错误，级联导致数据库 I/O 阻塞，业务服务中断。P0，高风险。",
+    "raw_alerts": [
+      {
+        "alert_id": "A-E010-001",
+        "host": "rack-e01-srv-001",
+        "rack": "E01",
+        "severity": "critical",
+        "source": "syslog",
+        "message": "EXT4-fs error (device sdc): ext4_find_entry:1455: inode #131073: comm mysqld: reading directory lblock 0",
+        "timestamp": "2026-05-04T19:00:00Z",
+        "raw": {"fs": "ext4", "device": "sdc", "process": "mysqld", "error_type": "read_error"}
+      },
+      {
+        "alert_id": "A-E010-002",
+        "host": "rack-e01-srv-001",
+        "rack": "E01",
+        "severity": "critical",
+        "source": "smart",
+        "message": "SMART: /dev/sdc health status FAILED, Reallocated_Sector_Ct=4096",
+        "timestamp": "2026-05-04T18:58:30Z",
+        "raw": {"device": "/dev/sdc", "health": "FAILED", "reallocated_sectors": 4096}
+      },
+      {
+        "alert_id": "A-E010-003",
+        "host": "rack-e01-srv-001",
+        "rack": "E01",
+        "severity": "critical",
+        "source": "zabbix",
+        "message": "MySQL connection pool exhausted: 0/500 connections available",
+        "timestamp": "2026-05-04T19:00:15Z",
+        "raw": {"metric": "mysql.connections.available", "value": 0, "max": 500}
+      },
+      {
+        "alert_id": "A-E010-004",
+        "host": "rack-e01-srv-001",
+        "rack": "E01",
+        "severity": "critical",
+        "source": "zabbix",
+        "message": "Service health check FAILED: api-gateway returned 503 for 3 consecutive probes",
+        "timestamp": "2026-05-04T19:00:30Z",
+        "raw": {"service": "api-gateway", "http_status": 503, "consecutive_failures": 3}
+      }
+    ],
+    "ground_truth": {
+      "is_noise": false,
+      "expected_priority": "P0",
+      "accepted_priorities": ["P0"],
+      "root_cause_component": "disk",
+      "root_cause_keywords": ["磁盘", "disk", "sdc", "I/O", "硬盘", "EXT4", "文件系统"],
+      "requires_approval": true,
+      "sop_keyword": "disk_failure",
+      "risk_level": "high",
+      "expected_status": "pending_approval",
+      "rationale": "磁盘彻底失效导致业务中断，紧急处置涉及业务迁移和数据恢复，必须人工审批"
+    }
+  }
+]
