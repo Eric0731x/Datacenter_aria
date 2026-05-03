@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip show *)",
+      "WebSearch",
+      "Bash(pip index *)",
+      "Bash(pip install *)",
+      "WebFetch(domain:pypi.org)",
+      "Bash(python -c \"import python_ipmi; help\\(python_ipmi\\)\")",
+      "Read(//tmp/**)",
+      "Bash(unzip -p python_ipmi-0.5.8-py3-none-any.whl pyipmi/interfaces/ipmitool.py)",
+      "Bash(unzip -p python_ipmi-0.5.8-py3-none-any.whl pyipmi/sdr.py)",
+      "Bash(unzip -p python_ipmi-0.5.8-py3-none-any.whl pyipmi/sensor.py)",
+      "Bash(python -m py_compile E:\\\\Datacenter_aria\\\\mock_tools.py)",
+      "Bash(python -m py_compile \"/e/Datacenter_aria/mock_tools.py\")",
+      "Bash(python -m py_compile orchestrator/graph.py orchestrator/state.py orchestrator/llm.py agents/triage.py agents/diagnosis.py agents/action.py tools/mock_tools.py main.py)"
+    ]
+  }
+}

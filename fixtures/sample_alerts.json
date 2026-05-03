@@ -1,0 +1,56 @@
+[
+  {
+    "alert_id": "A-20260504-001",
+    "host": "rack-a12-srv-007",
+    "rack": "A12",
+    "severity": "warning",
+    "source": "ipmi",
+    "message": "Fan FAN1 RPM dropped to 0",
+    "timestamp": "2026-05-04T03:12:08Z",
+    "raw": {
+      "fan_id": "FAN1",
+      "rpm": 0,
+      "threshold_lower_critical": 1500
+    }
+  },
+  {
+    "alert_id": "A-20260504-002",
+    "host": "rack-a12-srv-007",
+    "rack": "A12",
+    "severity": "critical",
+    "source": "ipmi",
+    "message": "CPU0 temperature 92C exceeds upper critical threshold",
+    "timestamp": "2026-05-04T03:12:15Z",
+    "raw": {
+      "sensor": "CPU0_Temp",
+      "value": 92,
+      "threshold_upper_critical": 85
+    }
+  },
+  {
+    "alert_id": "A-20260504-003",
+    "host": "rack-a12-srv-007",
+    "rack": "A12",
+    "severity": "critical",
+    "source": "zabbix",
+    "message": "CPU throttling detected, frequency dropped 40%",
+    "timestamp": "2026-05-04T03:12:22Z",
+    "raw": {
+      "metric": "cpu.throttle.pct",
+      "value": 40
+    }
+  },
+  {
+    "alert_id": "A-20260504-004",
+    "host": "rack-a12-srv-007",
+    "rack": "A12",
+    "severity": "warning",
+    "source": "syslog",
+    "message": "kernel: thermal throttling activated on CPU0",
+    "timestamp": "2026-05-04T03:12:25Z",
+    "raw": {
+      "log_level": "warn",
+      "facility": "kern"
+    }
+  }
+]
